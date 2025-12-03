@@ -1,33 +1,17 @@
-# What is Inheritance?
+# Interview Guide
 
-Inheritance is an Object-Oriented Programming (OOP) feature that allows a child class to acquire the properties and behaviors of a parent class.
+Welcome to my Technical Lead interview notes.
 
-## Key Benefits
-- Promotes **code reusability**
-- Supports **hierarchical relationships**
-- Allows **method overriding** for specific behaviors in derived classes
-- Reduces code duplication and improves maintainability
+This guide covers:
 
-## Real-Time Usage (My Project Example)
-I implemented inheritance to create a **base service class for HTTP requests**, which helped reuse common logic in multiple API service classes.
+- Angular
+- C#
+- ASP.NET Core
 
-For example:
+Use the left navigation to browse topics.
 
-```csharp
-// Base Class
-public class ApiService
-{
-    public virtual void MakeRequest()
-    {
-        Console.WriteLine("Making API request");
-    }
-}
+## Sections
 
-// Derived Class
-public class UserService : ApiService
-{
-    public override void MakeRequest()
-    {
-        Console.WriteLine("Making User API request");
-    }
-}
+1. **Angular** – Components, services, dependency injection, routing.
+2. **C#** – OOP concepts, language features, best practices.
+3. **ASP.NET Core** – Middleware, dependency injection, REST APIs.
