@@ -1,8 +1,9 @@
 # C# – Basics
 
-## 1. What is Inheritance in C#?
+## 1. Explain about Async and Await?
 
-Inheritance is an OOP feature that allows a **child class** to acquire the properties and behaviors of a **parent class**.
+**Async** - Keyword that marks a method to run asynchronously (does not block UI/thread).  
+**Await** - Keyword that pauses execution until an asynchronous task completes
 
 **Key benefits:**
 
