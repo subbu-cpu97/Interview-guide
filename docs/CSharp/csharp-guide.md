@@ -1,6 +1,6 @@
 # C# – Basics
 
-## SOLID
+## * SOLID
 SOLID is a set of 5 design principles that make software:  
 ✔ Maintainable  
 ✔ Extensible  
@@ -168,11 +168,11 @@ See TicketService example.
 ## Singleton Pattern?
 The Singleton pattern ensures that a class has only one instance in the entire application and provides a global point of access to that instance.
 
-***Key characteristics:***
-    - Only one instance is created
-    - That instance is globally accessible
-    - Object creation is controlled inside the class
-    - Often used for shared resources (e.g., configuration, logger, cache)
+***Key characteristics:***  
+    - Only one instance is created  
+    - That instance is globally accessible  
+    - Object creation is controlled inside the class  
+    - Often used for shared resources (e.g., configuration, logger, cache)  
 
 ```CSharp
 public class EposConfig
@@ -323,11 +323,11 @@ public class TicketService
 }
 
 ```
-✅ This still gives one instance per app
-✅ But now:
-    - Easier to unit test (can mock IEposConfig)
-    - No hidden static dependencies
-    - Better lifetime management by DI container
+✅ This still gives one instance per app  
+✅ But now:  
+    - Easier to unit test (can mock IEposConfig)  
+    - No hidden static dependencies  
+    - Better lifetime management by DI container  
     
 👉 Architect answer:  
 “In .NET Core, instead of manually coding Singletons, we prefer DI-managed singletons using AddSingleton, which keeps design testable and maintainable.”
