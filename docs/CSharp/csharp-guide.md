@@ -345,6 +345,123 @@ In classic C#, we can implement Singleton using a private constructor and a stat
 
 At the same time, I am careful not to store per-request or mutable shared state inside a Singleton, because that can cause race conditions and unpredictable behavior. I mainly use Singletons for read-only configuration, logging, or shared factories and always ensure they are thread-safe.  
 
+## Delegates and Events
+
+| Concept      | Meaning                                                             |
+| ------------ | ------------------------------------------------------------------- |
+| **Delegate** | A type that **references a method** (function pointer in C#)        |
+| **Event**    | A notification mechanism built on delegates → **publish/subscribe** |
+
+
+Delegates → choose which method to call
+Events → notify when something happens
+
+**Without delegates:**
+    - Methods are tightly coupled
+    - We must know exact method at compile time
+**With delegates:**
+    - We pass method like data
+    - Very useful when callback required
+    - Helps loose coupling → scalable architecture
+
+**Types of Delegates**
+| Type           | Syntax                       | Usage           |
+| -------------- | ---------------------------- | --------------- |
+| Named Delegate | `delegate void MyDelegate()` | Early design    |
+| Func           | `Func<T>`                    | Returns value   |
+| Action         | `Action<T>`                  | No return       |
+| Predicate      | `Predicate<T>`               | Returns boolean |
+
+
+```CSharp
+public delegate void TicketHandler(string ticketId);
+
+public class TicketNotifier
+{
+    public void Notify(string ticketId)
+    {
+        Console.WriteLine($"Ticket {ticketId} updated");
+    }
+}
+
+// Usage
+TicketHandler handler = new TicketNotifier().Notify;
+handler("TKT1001");
+
+```
+
+**Anonymous Method Example**
+```CSharp
+TicketHandler handler = delegate(string ticketId)
+{
+    Console.WriteLine($"Anonymous Handler - {ticketId}");
+};
+
+handler("TKT1002");
+
+```
+**Lambda Expression Delegate**
+✔ Shortest & most commonly used syntax today.
+```CSharp
+TicketHandler handler = ticketId => 
+    Console.WriteLine($"Lambda Handler: {ticketId}");
+handler("TKT1003");
+```
+**Multicast Delegates**
+✔ One delegate pointing to multiple methods
+
+```CSharp
+handler += new TicketNotifier().Notify;
+handler += id => Console.WriteLine($"SMS sent for {id}");
+handler("TKT2001");
+
+```
+***Events — Publisher & Subscriber Pattern***
+    - Events = Delegates + Access Control
+    - Only publisher can trigger the event
+
+Perfect for EPOS Ticket system — notification when ticket status changes
+
+```CSharp
+public class TicketService
+{
+    public delegate void TicketUpdated(string ticketId);
+    public event TicketUpdated? OnTicketUpdated;
+
+    public void UpdateTicket(string ticketId)
+    {
+        Console.WriteLine("Ticket updated!");
+        OnTicketUpdated?.Invoke(ticketId);
+    }
+}
+
+public class TeamLeaderService
+{
+    public void Alert(string ticketId)
+    {
+        Console.WriteLine($"TeamLead Alerted for {ticketId}");
+    }
+}
+
+```
+**Usage:**
+```CSharp
+var ticketService = new TicketService();
+var teamLeader = new TeamLeaderService();
+
+ticketService.OnTicketUpdated += teamLeader.Alert;
+ticketService.UpdateTicket("TKT3001");
+
+```
+
+TicketService does not know who is subscribed  
+Ultra low coupling → scalable architecture  
+
+Delegates allow passing method references dynamically, and Events build a publish-subscribe model on top of delegates.
+In our EPOS Ticketing system, we use them for notifications when a ticket status changes so that inventory, SLA monitoring, customer callback, and reporting modules react independently without tight coupling.
+This supports extensibility, maintainability, and real-time architecture requirements.
+
+
 ## Explain about Async and Await?
 
 **Async** - Keyword that marks a method to run asynchronously (does not block UI/thread).  
