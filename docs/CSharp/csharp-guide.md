@@ -374,19 +374,60 @@ Events → notify when something happens
 
 
 ```CSharp
+using System;
+
+// Named Delegate
 public delegate void TicketHandler(string ticketId);
 
 public class TicketNotifier
 {
+    // Common method used by all delegate examples
     public void Notify(string ticketId)
     {
         Console.WriteLine($"Ticket {ticketId} updated");
     }
+
+    // Method for boolean Check (used by Predicate & Func)
+    public bool IsValidTicket(string ticketId)
+    {
+        return ticketId.StartsWith("TKT");
+    }
+    
+    public static void Main()
+    {
+        TicketNotifier notifier = new TicketNotifier();
+
+        // ------------------------------------
+        // 1️⃣ Named Delegate (Early Design)
+        // Points directly to a method with void return
+        TicketHandler handler = notifier.Notify;
+        handler("TKT1001");
+        // ------------------------------------
+
+        // ------------------------------------
+        // 2️⃣ Func -> MUST return a value
+        // Func<InputType, ReturnType>
+        Func<string, bool> funcCheck = notifier.IsValidTicket;
+        bool funcResult = funcCheck("TKT1002");
+        Console.WriteLine($"Func: Ticket valid? {funcResult}");
+        // ------------------------------------
+
+        // ------------------------------------
+        // 3️⃣ Action -> ONLY does work (no return)
+        Action<string> actionNotify = notifier.Notify;
+        actionNotify("TKT1003");
+        // ------------------------------------
+
+        // ------------------------------------
+        // 4️⃣ Predicate -> ALWAYS returns boolean
+        // Predicate<T> == Func<T, bool>
+        Predicate<string> predicateCheck = notifier.IsValidTicket;
+        bool predicateResult = predicateCheck("ABC1004");
+        Console.WriteLine($"Predicate: Ticket valid? {predicateResult}");
+        // ------------------------------------
+    }
 }
 
-// Usage
-TicketHandler handler = new TicketNotifier().Notify;
-handler("TKT1001");
 
 ```
 
