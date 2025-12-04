@@ -294,7 +294,7 @@ public class TicketService
 }
 
 ```
-##Singleton vs DI AddSingleton
+## Singleton vs DI AddSingleton
 In modern ASP.NET Core, we rarely use the classic Singleton pattern.  
 Instead, we use dependency injection with Singleton lifetime:  
 ```CSharp
