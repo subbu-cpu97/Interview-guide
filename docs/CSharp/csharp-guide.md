@@ -1,12 +1,12 @@
 # C# – Basics
 
 ## SOLID
-SOLID is a set of 5 design principles that make software:
-✔ Maintainable
-✔ Extensible
-✔ Testable
-✔ Scalable
-✔ Clean
+SOLID is a set of 5 design principles that make software:  
+✔ Maintainable  
+✔ Extensible  
+✔ Testable  
+✔ Scalable  
+✔ Clean  
 
 | Principle                 | Meaning                                            |
 | ------------------------- | -------------------------------------------------- |
