@@ -503,6 +503,79 @@ In our EPOS Ticketing system, we use them for notifications when a ticket status
 This supports extensibility, maintainability, and real-time architecture requirements.
 
 
+
+## Dependency Injection
+
+Dependency Injection is a design pattern where the framework automatically provides required objects (dependencies) to a class instead of the class creating them itself.    
+
+✔ Promotes loose coupling  
+✔ Improves testability  
+✔ Follows SOLID (especially DIP)  
+✔ Centralized configuration for all dependencies  
+
+**Why DI is built-in to ASP.NET Core?**
+| Before DI                                             | With DI                                   |
+| ----------------------------------------------------- | ----------------------------------------- |
+| Classes create dependencies manually → tight coupling | Framework constructs dependencies for you |
+| Hard to test                                          | Easy mocking                              |
+| Hard to configure                                     | Centralized service container             |
+| Painful structure in large apps                       | Scalable architecture                     |
+
+**DI in Action — Constructor Injection**
+```CSharp
+public class TicketService
+{
+    private readonly ITicketRepository _repository;
+
+    public TicketService(ITicketRepository repository)
+    {
+        _repository = repository;
+    }
+
+    public void UpdateTicket(Ticket ticket)
+    {
+        _repository.Update(ticket);
+    }
+}
+
+
+// Program.cs
+
+builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+builder.Services.AddScoped<ITicketValidator, SLAValidator>();
+builder.Services.AddScoped<INotificationService, EmailNotificationService>();
+
+
+```
+
+**Types of DI Lifetimes**
+
+| Lifetime      | Meaning                             | EPOS Usage Example                      |
+| ------------- | ----------------------------------- | --------------------------------------- |
+| **Singleton** | One instance for entire application | App configuration, constant lookup data |
+| **Scoped**    | One instance per request            | TicketService, validation services      |
+| **Transient** | New instance for each usage         | Helper utilities, formatting            |
+
+```CSharp
+builder.Services.AddSingleton<ISlaConfig, SlaConfig>();
+builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddTransient<IPdfGenerator, PdfGenerator>();
+```
+**What happens internally?**
+ASP.NET Core:  
+    - Uses IServiceCollection to register services  
+    - Builds a service container  
+    - Uses constructor injection by default  
+    - Resolves dependencies when creating Controller  
+    - No new keyword in business layer → IoC container does the job.  
+
+TicketService does not know implementation of repository → Loose coupling 
+
+Dependency Injection in ASP.NET Core enables loosely coupled architecture where classes depend on interfaces instead of implementations, improving testability and maintainability using built-in IoC container.
+
+**What is IoC (Inversion of Control)?**
+IoC is a design principle where the control of object creation and dependency management is inverted from the class itself to an external container or framework.  
+
 ## Explain about Async and Await?
 
 **Async** - Keyword that marks a method to run asynchronously (does not block UI/thread).  
