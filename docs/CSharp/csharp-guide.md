@@ -576,6 +576,81 @@ Dependency Injection in ASP.NET Core enables loosely coupled architecture where 
 **What is IoC (Inversion of Control)?**
 IoC is a design principle where the control of object creation and dependency management is inverted from the class itself to an external container or framework.  
 
+## AsNoTracking()
+
+📌 When reading data without updating it
+
+Disables EF change tracking → improves performance
+Best for queries returning DTOs or reporting data
+  
+✔ Recommended for:  
+    Search screens    
+    Lists  
+    Reports  
+    Dashboard APIs  
+    Read-only lookups (City, Bank, CallTypes)  
+
+❌ Don’t use when updating entities (EF won’t track changes)  
+
+📌 Example:  
+```CSharp
+var cities = await _db.Cities
+    .AsNoTracking()
+    .ToListAsync();
+
+```
+
+**Interview line:**
+Using AsNoTracking can improve read performance by 30–40% in large result sets.
+
+## Include()
+📌 Used for Eager Loading (load related tables)
+Example: Terminal → Merchant → City
+```CSharp
+var terminal = await _db.Terminals
+    .Include(t => t.Merchant)
+    .ThenInclude(m => m.City)
+    .FirstOrDefaultAsync(x => x.Id == id);
+```
+
+✔ Use when you really need related objects
+❌ Can cause heavy data loads → row explosion issues
+
+**Interview rule:**
+Use projection instead of Include for API DTO responses.
+
+**Example projection (Better):**
+```CSharp
+var result = await _db.Terminals
+    .Select(t => new TerminalDto
+    {
+        TerminalId = t.TerminalId,
+        MerchantName = t.Merchant.MerchantName
+    })
+    .ToListAsync();
+```
+## AsQueryable()
+
+📌 Converts collection to IQueryable<T> so EF can build dynamic queries
+Used when applying filters later
+
+**Example:**
+```Csharp
+var query = _db.Terminals.AsQueryable();
+
+if(cityId != null)
+    query = query.Where(t => t.Merchant.CityId == cityId);
+
+if(bankId != null)
+    query = query.Where(t => t.BankId == bankId);
+
+var result = await query.ToListAsync();
+```
+
+✔ Very useful in search screens with multiple filters
+✔ Building queries dynamically
+
+
 ## Explain about Async and Await?
 
 **Async** - Keyword that marks a method to run asynchronously (does not block UI/thread).  
