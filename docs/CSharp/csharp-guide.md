@@ -650,9 +650,63 @@ var result = await query.ToListAsync();
 ✔ Very useful in search screens with multiple filters
 ✔ Building queries dynamically
 
+## What is the difference between readonly and const in C#?
+
+**Const**
+    A const value is a compile-time constant whose value is fixed forever and embedded into the calling code.
+    const values are inlined at compile time, so changing them requires recompiling all dependent assemblies.
+**Readonly**
+    A readonly field is a runtime constant whose value can be assigned only once, usually at object creation time.
+
+| Aspect                      | `const`                       | `readonly`         |
+| --------------------------- | ----------------------------- | ------------------ |
+| Time of assignment          | Compile-time                  | Runtime            |
+| Where value is stored       | In calling assembly (inlined) | In object instance |
+| Can use non-primitive types | ❌ No                          | ✔ Yes              |
+| Can depend on runtime value | ❌ No                          | ✔ Yes              |
+| Can be set in constructor   | ❌ No                          | ✔ Yes              |
+| Can change per environment  | ❌ No                          | ✔ Yes              |
+| Versioning safe             | ❌ No                          | ✔ Yes              |
+
+
+const → slightly faster (inlined)
+
+readonly → negligible overhead
+
+const values are compile-time constants and are inlined into consuming assemblies, which can cause versioning issues if the value changes.
+readonly fields are assigned at runtime and are safer for configuration-based or environment-specific values.
+In real-world enterprise applications, we prefer readonly unless the value is truly universal and guaranteed never to change.
+
+If there is even a 1% chance the value may change in future → use readonly, not const.
+
+
+## What is the sealed keyword used for in C#?
+
+The sealed keyword is used to prevent inheritance or prevent method overriding in C#.
+A sealed class cannot be inherited by any other class.
+It can be applied to:
+    1.Classes
+    2.Methods (only overriding methods)
+
+
+**Why would we want this?**
+To:
+✔ Protect business rules
+✔ Prevent misuse or incorrect extension
+✔ Improve security
+✔ Improve performance (minor but real)
+✔ Enforce architectural boundaries    
+
+The sealed keyword is used to prevent inheritance or further method overriding.
+It is commonly used to protect critical business logic, enforce architectural boundaries, and avoid misuse of classes.
+In enterprise systems like EPOS, we seal classes that represent final domain rules, such as SLA or ticket status calculations, to ensure consistency and correctness.
+    
+
 
 ## Explain about Async and Await?
 
 **Async** - Keyword that marks a method to run asynchronously (does not block UI/thread).  
 **Await** - Keyword that pauses execution until an asynchronous task completes
+
+
 
