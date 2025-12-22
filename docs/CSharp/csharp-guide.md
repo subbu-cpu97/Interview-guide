@@ -652,11 +652,11 @@ var result = await query.ToListAsync();
 
 ## What is the difference between readonly and const in C#?
 
-**Const**
-    A const value is a compile-time constant whose value is fixed forever and embedded into the calling code.
-    const values are inlined at compile time, so changing them requires recompiling all dependent assemblies.
-**Readonly**
-    A readonly field is a runtime constant whose value can be assigned only once, usually at object creation time.
+**Const**  
+    A const value is a compile-time constant whose value is fixed forever and embedded into the calling code.  
+    const values are inlined at compile time, so changing them requires recompiling all dependent assemblies.  
+**Readonly**  
+    A readonly field is a runtime constant whose value can be assigned only once, usually at object creation time.  
 
 | Aspect                      | `const`                       | `readonly`         |
 | --------------------------- | ----------------------------- | ------------------ |
@@ -669,41 +669,297 @@ var result = await query.ToListAsync();
 | Versioning safe             | ❌ No                          | ✔ Yes              |
 
 
-const → slightly faster (inlined)
+const → slightly faster (inlined)  
 
-readonly → negligible overhead
+readonly → negligible overhead  
 
-const values are compile-time constants and are inlined into consuming assemblies, which can cause versioning issues if the value changes.
-readonly fields are assigned at runtime and are safer for configuration-based or environment-specific values.
-In real-world enterprise applications, we prefer readonly unless the value is truly universal and guaranteed never to change.
+const values are compile-time constants and are inlined into consuming assemblies, which can cause versioning issues if the value changes.  
+readonly fields are assigned at runtime and are safer for configuration-based or environment-specific values.  
+In real-world enterprise applications, we prefer readonly unless the value is truly universal and guaranteed never to change.  
 
-If there is even a 1% chance the value may change in future → use readonly, not const.
-
-
-## What is the sealed keyword used for in C#?
-
-The sealed keyword is used to prevent inheritance or prevent method overriding in C#.
-A sealed class cannot be inherited by any other class.
-It can be applied to:
-    1.Classes
-    2.Methods (only overriding methods)
+If there is even a 1% chance the value may change in future → use readonly, not const.  
 
 
-**Why would we want this?**
-To:
-✔ Protect business rules
-✔ Prevent misuse or incorrect extension
-✔ Improve security
-✔ Improve performance (minor but real)
-✔ Enforce architectural boundaries    
+## What is the sealed keyword used for in C#?  
 
-The sealed keyword is used to prevent inheritance or further method overriding.
-It is commonly used to protect critical business logic, enforce architectural boundaries, and avoid misuse of classes.
-In enterprise systems like EPOS, we seal classes that represent final domain rules, such as SLA or ticket status calculations, to ensure consistency and correctness.
+The sealed keyword is used to prevent inheritance or prevent method overriding in C#.  
+A sealed class cannot be inherited by any other class.  
+It can be applied to:  
+    1.Classes  
+    2.Methods (only overriding methods)  
+
+
+**Why would we want this?**  
+To:  
+✔ Protect business rules  
+✔ Prevent misuse or incorrect extension  
+✔ Improve security  
+✔ Improve performance (minor but real)  
+✔ Enforce architectural boundaries        
+
+The sealed keyword is used to prevent inheritance or further method overriding.  
+It is commonly used to protect critical business logic, enforce architectural boundaries, and avoid misuse of classes.  
+In enterprise systems like EPOS, we seal classes that represent final domain rules, such as SLA or ticket status   calculations, to ensure consistency and correctness.  
+
+## What are all the access modifiers available for types in C#?    
+
+✅ public  
+    The type is accessible from anywhere (any project, any assembly).  
+
+    When to use:
+        - API contracts
+        - Shared libraries
+        - Services used across projects
+        
+    📌 Interview line:
+        Public types form the external contract of an assembly.
+    
+✅ internal  
+    The type is accessible only within the same assembly (project).  
+    
+    When to use:  
+        - Internal implementation details  
+        - Helper or utility classes  
+        - Prevent misuse from other projects  
+        
+    📌 Interview line:
+        Internal types help encapsulate implementation details within the assembly.    
+
+| Modifier             | Meaning                                    |
+| -------------------- | ------------------------------------------ |
+| `public`             | Accessible everywhere                      |
+| `private`            | Accessible only inside the containing type |
+| `protected`          | Accessible in derived types                |
+| `internal`           | Accessible within same assembly            |
+| `protected internal` | Derived types **or** same assembly         |
+| `private protected`  | Derived types **and** same assembly        |
+
+**Architect-Level Insight**
+Use internal aggressively to reduce your public surface area.  
+Only expose types that are part of your intended API contract.  
+
+This:  
+    Improves maintainability 
+    Prevents accidental usage  
+    Makes refactoring safer  
+
+In C#, top-level types can only be public or internal.  
+Nested types can use all access modifiers including private, protected, protected internal, and private protected.  
+This design helps control visibility and enforce encapsulation at both assembly and class levels.  
+
+
+## What is the difference between an interface and an abstract class in C#?
+
+Interface 
+    An interface defines a contract that a class must implement.  
+    It specifies what the class should do, not how.
+
+Abstract Class  
+    An abstract class represents an incomplete base class that provides both behavior and contracts.  
+    It defines what + partial how.  
+
+| Aspect               | Interface               | Abstract Class        |
+| -------------------- | ----------------------- | --------------------- |
+| Purpose              | Contract                | Base class            |
+| Implementation       | No (only signatures)    | Yes (partial or full) |
+| Fields               | ❌ No                    | ✔ Yes                 |
+| Constructors         | ❌ No                    | ✔ Yes                 |
+| Access modifiers     | Public only (members)   | Any                   |
+| Multiple inheritance | ✔ Yes (many interfaces) | ❌ No (only one class) |
+| State (fields)       | ❌ No                    | ✔ Yes                 |
+| Versioning           | Easier                  | Risky                 |
+| When to use          | Capability / role       | Shared behavior       |
+
+
+
+An interface defines a contract and supports multiple inheritance, making it ideal for loose coupling and dependency injection.  
+An abstract class provides a base with shared behavior and state, and is useful when multiple derived classes share common logic.  
+
+In enterprise systems like EPOS, we use interfaces for services and repositories to keep the system flexible, and abstract classes when we need to share common functionality or enforce base behavior.  
+
+
+## When is a static constructor called in C#?
+
+A static constructor is used to initialize static data of a class.
+
+Key characteristics:   
+     - Has no access modifier  
+     - Takes no parameters
+     - Runs automatically
+     - Runs only once
+     - Cannot be called explicitly
+
+A static constructor is called automatically by the CLR, before the first use of the type, and only once per AppDomain.
+
+The static constructor is triggered when any one of these happens for the first time:
+
+```CSharp
+// Creating an instance of the class
+var service = new TicketService(); // static ctor runs first
+
+ // Accessing a static field or property
+var value = TicketService.MaxRetries; // static ctor runs first
+
+Calling a static method
+TicketService.Initialize(); // static ctor runs first
+
+```
+“The static constructor runs before any static member is accessed or any instance is created.”
+
+
+Order of Execution  
+    If a class has:  
+        Static fields  
+        Static constructor  
+        Instance constructor  
+Order:
+    1️⃣ Static field initializers  
+    2️⃣ Static constructor (once)  
+    3️⃣ Instance constructor (every time)  
+
+Static constructors are thread-safe by default.
+
+CLR ensures:  
+    Only one thread executes the static constructor    
+    Other threads wait until it completes  
+    
+    📌 Interview line:  
+        “Static constructors are implicitly thread-safe.”
+
+What happens if static constructor throws an exception?  
+    ⚠ Very important:  
+         If a static constructor throws an exception:  
+            The type becomes unusable  
+            CLR throws TypeInitializationException    
+            All future access fails  
+    📌 Architect warning:
+            “Static constructors must be simple and reliable. Avoid heavy logic or I/O.”
+
+** When should you use a static constructor? **  
+    ✔ Initialize static readonly fields  
+    ✔ Load constant configuration once  
+    ✔ Prepare lookup tables  
+    ✔ One-time setup logic  
+
+❌ Not for:    
+    DB calls 
+    Network calls  
+    Long-running logic      
+
+
+A static constructor is called automatically by the CLR before the first use of the type—either when an instance is created or a static member is accessed. It runs only once per application domain and is thread-safe by default.  
+
+## How do you create an extension method in C#?  
+
+Extension methods let you add new methods to existing types without modifying them. This is a design feature used heavily in LINQ, ASP.NET Core, and enterprise codebases.  
+
+An extension method is a static method that appears as if it were an instance method on another type.  
+
+Key ideas interviewers expect:
+    No inheritance
+    No modification of original type
+    Compiler rewrites the call
+
+📌 Example you already use:
+```CSharp
+    list.Where(x => x.IsActive);
+```
+
+Where() is an extension method on IEnumerable<T>.
+
+***To create an extension method, you must follow all these rules:***
+    Method must be static
+    It must be inside a static class
+    The first parameter must be prefixed with this
+    The first parameter defines which type is extended
+    The namespace must be imported (using)
+
+
+At compile time, the compiler converts the extension method call into a static method call
+
+An extension method is a static method defined in a static class that allows adding behavior to existing types without modifying or inheriting from them.  
+It’s created by using the this keyword on the first parameter.  
+In enterprise applications like EPOS, we use extension methods to keep reusable domain logic clean and expressive, such as SLA checks or filtering logic, without bloating entity classes.  
+
+## Does C# support multiple inheritance?
+
+    No, C# does not support multiple inheritance of classes.
+    Yes, C# supports multiple inheritance through interfaces.
+
+What is multiple inheritance?  
+    Multiple inheritance means a class inherits from more than one base class.      
+```CSharp
+    // ❌ Not allowed in C#
+    class MyClass : BaseClass1, BaseClass2
+    {
+    }
+
+```
+
+Why is it not allowed?
+    To avoid the Diamond Problem.
+
+Diamond Problem (conceptual)
+    Two base classes have the same method
+    Derived class doesn’t know which implementation to use
+    Causes ambiguity and bugs
+
+📌 Interview line:
+    “C# avoids multiple inheritance of classes to prevent ambiguity and complexity like the diamond problem.”  
+
+What C# DOES support instead (Important)
+✔ Single inheritance + Multiple interfaces    
+```CSharp
+    class TicketService : BaseService, ILogging, IAuditable, INotification
+    {
+    }
+
+```
+✔ One base class
+✔ Multiple interfaces
+
+**Why interfaces solve the problem**
+    Interfaces:
+        Do not contain state
+        Do not cause ambiguity
+        Define only contracts
+
+
+“C# uses interfaces to support multiple inheritance of behavior without state.”
+
+C# does not support multiple inheritance of classes to avoid ambiguity and complexity such as the diamond problem.
+However, it supports multiple inheritance through interfaces, allowing a class to implement multiple behaviors while inheriting from only one base class.  
+This design encourages clean architecture and composition over inheritance.  
+
+## Explain boxing and unboxing in C#.
+
+**What is Boxing?**
+    Boxing is the process of converting a value type (stored on the stack) into a reference type (stored on the heap).  
+    
+What actually happens internally?  
+    CLR allocates memory on the heap  
+    Copies the value into that heap object  
+    Returns a reference to it  
+
+📌 Key point:  
+    Boxing creates a new object on the heap.  
+
+**What is Unboxing?**
+ Unboxing is the process of converting a boxed object back into a value type.  
+ 
+What happens internally?  
+    CLR checks the object’s actual type  
+    Copies the value from heap to stack  
+
+📌 Important:  
+    Unboxing requires explicit casting.  
+
+
+
     
 
-
-## Explain about Async and Await?
+    
+## Explain about Async and Await?  
 
 **Async** - Keyword that marks a method to run asynchronously (does not block UI/thread).  
 **Await** - Keyword that pauses execution until an asynchronous task completes
