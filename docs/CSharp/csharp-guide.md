@@ -956,9 +956,171 @@ What happens internally?
 
 
 
-    
+## What are the heap and stack in C# (or .NET), and how do they work?    
 
+**What is the Stack?**   
+    The stack is a region of memory used to store method execution data.  
+
+It stores:   
+    Method parameters  
+    Local variables (value types)  
+    Method call information (call frames)  
+    Return addresses 
     
+Key characteristics   
+    Fast (LIFO – Last In, First Out)
+    Automatically managed
+    Memory is freed immediately when method exits  
+    Thread-specific (each thread has its own stack)  
+
+📌 Interview line:  
+“Stack memory is short-lived and automatically cleaned up when the method scope ends.”      
+
+**What is the Heap?**
+    The heap is a region of memory used to store objects with longer lifetimes.
+
+It stores:  
+    Reference type objects
+    Arrays  
+    Objects shared across methods  
+    Objects with dynamic lifetime  
+
+Key characteristics  
+    Slower than stack  
+    Managed by Garbage Collector (GC)  
+    Shared across threads  
+    Lifetime is non-deterministic  
+
+📌 Interview line:  
+“Heap memory is managed by the garbage collector and is used for objects whose lifetime is not bound to a single method.”  
+
+Value Types (usually stack) 
+    int, double, bool  
+    struct  
+    enum  
+Reference Types (heap)  
+    class  
+    string  
+    array  
+    object  
+
+
+    | Aspect            | Stack              | Heap                  |
+| ----------------- | ------------------ | --------------------- |
+| Speed             | Very fast          | Slower                |
+| Memory management | Automatic          | Garbage Collector     |
+| Lifetime          | Short              | Long                  |
+| Scope             | Method-level       | Application-level     |
+| Thread-safe       | Yes (thread-local) | Needs synchronization |
+| Size              | Limited            | Large                 |
+
+
+The stack is a fast, thread-local memory used for method execution and local variables, with automatic cleanup when the method exits.  
+The heap stores reference-type objects with longer lifetimes and is managed by the garbage collector.  
+In enterprise applications, we use the stack for short-lived data and the heap for shared domain objects, while being mindful of heap allocations to avoid GC performance issues.  
+
+
+## What is the difference between string and StringBuilder in C#?
+
+**string**
+    string is immutable.  
+    Once created, its value cannot be changed.  
+
+Any modification:
+    Creates a new object  
+    Allocates memory on the heap  
+    Old string waits for GC  
+
+**StringBuilder**
+    StringBuilder is mutable.  
+    It allows you to modify the same object without creating new instances.  
+
+| Aspect            | `string`                  | `StringBuilder`                |
+| ----------------- | ------------------------- | ------------------------------ |
+| Mutability        | Immutable                 | Mutable                        |
+| Memory allocation | New object per change     | Reuses same object             |
+| Performance       | Poor for frequent changes | Excellent for frequent changes |
+| Thread safety     | Thread-safe               | ❌ Not thread-safe              |
+| Best use          | Fixed / small text        | Repeated concatenation         |
+| Namespace         | `System`                  | `System.Text`                  |
+
+
+string in C# is immutable, meaning every modification creates a new object, which can cause performance issues in loops or repeated concatenations.  
+StringBuilder is mutable and allows modifications to the same object, making it more efficient for dynamic string construction.  
+In enterprise systems like EPOS, we use StringBuilder for logging, reports, and audit trails, and string for fixed or small text values.  
+
+Optimized logging and reporting performance by replacing repeated string concatenation with StringBuilder.
+
+## How do we create a date and time with a specific time zone in C#?
+
+The Core Problem (Why Time Zones Matter)  
+    Servers usually run in UTC
+    Users operate in local time zones (e.g., Egypt, India)
+Storing local time directly causes:
+    Wrong reports
+    DST issues
+    Data inconsistency
+
+📌 Architect rule:
+    Always store time in UTC. Convert to local time only for display.
+
+DateTime
+    Can represent Local, UTC, or Unspecified
+    Does not reliably store time-zone offset
+    Easy to misuse ❌
+
+DateTimeOffset ✅ (Recommended)
+    Represents a date + time with an offset from UTC    
+
+
+“For time-zone-aware systems, DateTimeOffset is preferred over DateTime.”
+
+We store all timestamps in UTC and convert them to the user’s local time zone only when displaying or calculating SLA.  
+
+In distributed systems, we always store timestamps in UTC.  
+To create or display time in a specific time zone, we convert UTC using TimeZoneInfo or DateTimeOffset.  
+DateTimeOffset is preferred because it preserves the UTC offset and avoids ambiguity, especially during daylight saving changes.  
+In enterprise applications like EPOS, this ensures consistent SLA calculations and accurate reporting across regions.  
+
+Implemented UTC-based date handling with time-zone conversion using DateTimeOffset to ensure accurate SLA calculations across regions.
+
+## How do we change the current culture in C# / .NET?
+
+**What is Culture in .NET?**
+    Culture defines how data is formatted and interpreted, not the data itself.
+
+Culture controls:
+    Date formats (dd/MM/yyyy vs MM/dd/yyyy)
+    Number formats (1,000.50 vs 1.000,50)
+    Currency symbols
+    Language-specific rules
+    String comparisons
+
+Examples:
+    en-US
+    en-IN
+    ar-EG
+
+.NET uses two main culture settings: 
+    CurrentCulture  
+    Affects formatting  
+    Dates, numbers, currency  
+    
+CurrentUICulture  
+    Affects resources  
+    Labels, messages, UI text  
+
+📌 Interview line:
+
+“CurrentCulture controls formatting, while CurrentUICulture controls localization.”  
+
+In .NET, culture controls formatting and localization.  
+We can change culture using CultureInfo.CurrentCulture and CurrentUICulture.  
+In enterprise applications, especially ASP.NET Core, culture is typically set per request based on user preference or   region, while data is stored independently in a culture-neutral format like UTC.  
+This approach ensures correct formatting without affecting data integrity.  
+
+
+
 ## Explain about Async and Await?  
 
 **Async** - Keyword that marks a method to run asynchronously (does not block UI/thread).  
