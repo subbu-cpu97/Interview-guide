@@ -1120,6 +1120,99 @@ In enterprise applications, especially ASP.NET Core, culture is typically set pe
 This approach ensures correct formatting without affecting data integrity.  
 
 
+## Strategy Pattern
+
+The Strategy design pattern defines a family of algorithms, encapsulates each one, and makes them interchangeable. 
+Strategy lets the algorithm vary independently from clients that use it.
+
+**In plain English:**
+    You have multiple ways to do one task
+    You want to choose the behavior dynamically
+    You don’t want if-else or switch blocks
+
+**Strategy Pattern Structure (Conceptual)**
+3 Main Parts:
+    Strategy Interface – defines the contract
+    Concrete Strategies – actual implementations
+    Context – uses a strategy  
+
+
+```CSharp
+// Step 1: Strategy Interface
+
+   public interface IFeeCalculationStrategy
+   {
+       decimal CalculateFee(decimal amount);
+   }
+
+// Step 2: Concrete Strategies
+
+    public class PremiumMerchantFeeStrategy : IFeeCalculationStrategy
+    {
+        public decimal CalculateFee(decimal amount)
+        {
+            return amount * 0.01m;
+        }
+    }
+
+    public class StandardMerchantFeeStrategy : IFeeCalculationStrategy
+    {
+        public decimal CalculateFee(decimal amount)
+        {
+            return amount * 0.02m;
+        }
+        }
+    public class EnterpriseMerchantFeeStrategy : IFeeCalculationStrategy
+    {
+        public decimal CalculateFee(decimal amount)
+        {
+            return 0;
+        }
+    }
+
+// Step 3: Strategy Resolver (Context)
+public class FeeCalculator
+{
+    private readonly IFeeCalculationStrategy _strategy;
+
+    public FeeCalculator(IFeeCalculationStrategy strategy)
+    {
+        _strategy = strategy;
+    }
+
+    public decimal Calculate(decimal amount)
+    {
+        return _strategy.CalculateFee(amount);
+    }
+}
+
+
+// Step 4: Controller Usage (Runtime Selection)
+[HttpGet("calculate-fee")]
+public IActionResult CalculateFee(string merchantType, decimal amount)
+{
+    IFeeCalculationStrategy strategy = merchantType switch
+    {
+        "Premium" => new PremiumMerchantFeeStrategy(),
+        "Standard" => new StandardMerchantFeeStrategy(),
+        "Enterprise" => new EnterpriseMerchantFeeStrategy(),
+        _ => throw new Exception("Invalid merchant type")
+    };
+
+    var calculator = new FeeCalculator(strategy);
+    var fee = calculator.Calculate(amount);
+
+    return Ok(fee);
+}
+
+```
+“I use the Strategy pattern when I have multiple implementations of the same business rule.
+In EPOS, it helps me isolate merchant-specific logic, remove conditional complexity, and follow the Open–Closed Principle.
+It improves maintainability, testability, and extensibility.”
+
+
+
+
 
 ## Explain about Async and Await?  
 
