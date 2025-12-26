@@ -1125,16 +1125,16 @@ This approach ensures correct formatting without affecting data integrity.
 The Strategy design pattern defines a family of algorithms, encapsulates each one, and makes them interchangeable. 
 Strategy lets the algorithm vary independently from clients that use it.
 
-**In plain English:**
-    You have multiple ways to do one task
-    You want to choose the behavior dynamically
-    You don’t want if-else or switch blocks
+**In plain English:**  
+    You have multiple ways to do one task  
+    You want to choose the behavior dynamically  
+    You don’t want if-else or switch blocks  
 
-**Strategy Pattern Structure (Conceptual)**
-3 Main Parts:
-    Strategy Interface – defines the contract
-    Concrete Strategies – actual implementations
-    Context – uses a strategy  
+**Strategy Pattern Structure (Conceptual)**  
+3 Main Parts:  
+    Strategy Interface – defines the contract  
+    Concrete Strategies – actual implementations  
+    Context – uses a strategy      
 
 
 ```CSharp
