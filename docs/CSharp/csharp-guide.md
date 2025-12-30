@@ -1,6 +1,10 @@
 # C# – Basics
 
-## * SOLID
+1) [SOLID?](#solid)
+2) [Singleton Pattern?](#singleton-pattern)
+
+
+## SOLID
 SOLID is a set of 5 design principles that make software:  
 ✔ Maintainable  
 ✔ Extensible  
