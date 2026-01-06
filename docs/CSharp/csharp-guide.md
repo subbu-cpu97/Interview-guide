@@ -1,10 +1,10 @@
 # C# – Basics
 
-1) [SOLID?](#solid)
+1) [SOLID?](#1-solid)
 2) [Singleton Pattern?](#singleton-pattern)
 
 
-## SOLID
+## 1. SOLID
 SOLID is a set of 5 design principles that make software:  
 ✔ Maintainable  
 ✔ Extensible  
@@ -20,7 +20,8 @@ SOLID is a set of 5 design principles that make software:
 | I – Interface Segregation | No forcing extra methods on class                  |
 | D – Dependency Inversion  | Depend on abstractions, not concrete classes       |
 
-#### S stands for Single Responsibility Principle
+### S stands for Single Responsibility Principle
+
 A class should have only one reason to change.
 
 **Scenario:**
@@ -1088,42 +1089,6 @@ In enterprise applications like EPOS, this ensures consistent SLA calculations a
 
 Implemented UTC-based date handling with time-zone conversion using DateTimeOffset to ensure accurate SLA calculations across regions.
 
-## How do we change the current culture in C# / .NET?
-
-**What is Culture in .NET?**
-    Culture defines how data is formatted and interpreted, not the data itself.
-
-Culture controls:
-    Date formats (dd/MM/yyyy vs MM/dd/yyyy)
-    Number formats (1,000.50 vs 1.000,50)
-    Currency symbols
-    Language-specific rules
-    String comparisons
-
-Examples:
-    en-US
-    en-IN
-    ar-EG
-
-.NET uses two main culture settings: 
-    CurrentCulture  
-    Affects formatting  
-    Dates, numbers, currency  
-    
-CurrentUICulture  
-    Affects resources  
-    Labels, messages, UI text  
-
-📌 Interview line:
-
-“CurrentCulture controls formatting, while CurrentUICulture controls localization.”  
-
-In .NET, culture controls formatting and localization.  
-We can change culture using CultureInfo.CurrentCulture and CurrentUICulture.  
-In enterprise applications, especially ASP.NET Core, culture is typically set per request based on user preference or   region, while data is stored independently in a culture-neutral format like UTC.  
-This approach ensures correct formatting without affecting data integrity.  
-
-
 ## Strategy Pattern
 
 The Strategy design pattern defines a family of algorithms, encapsulates each one, and makes them interchangeable. 
@@ -1215,8 +1180,530 @@ In EPOS, it helps me isolate merchant-specific logic, remove conditional complex
 It improves maintainability, testability, and extensibility.”
 
 
+## Factory Design Pattern?
+Factory Pattern encapsulates object creation logic and returns objects based on input, without exposing the creation details to the caller.
+
+In simple words:  
+    You ask for an object.  
+    You don’t care how it is created.   
+    The factory decides which concrete object to give you.   
+    👉 Focus: object creation, not behavior.  
+
+Problem Without Factory (Common EPOS Mistake)
+Imagine EPOS code like this:
+
+```CSharp
+if (merchantGroup == "Retailer")
+    terminalService = new RetailerTerminalService();
+else if (merchantGroup == "Chain")
+    terminalService = new ChainTerminalService();
+else if (merchantGroup == "Wholesaler")
+    terminalService = new WholesalerTerminalService();
+```    
+
+Why this is bad:   
+    - Creation logic spread everywhere.   
+    - Every new merchantGroup = code change in many places.   
+    - Violates Single Responsibility Principle.   
+    - Hard to test.   
+
+Three Key Parts:  
+    - Common Interface.   
+    - Concrete Implementations.   
+    - Factory Class.   
+
+```CSharp
+// Step 1: Common Interface
+
+    public interface ITerminalService
+    {
+        void CreateTerminal(string transactionId);
+    }
+
+// Step 2: Concrete Implementations    
+
+    public class RetailerTerminalService : ITerminalService
+    {
+        public void CreateTerminal(CreateTerminalDTO model)
+        {
+            // Retailer-specific logic
+        }
+    }
+
+    public class ChainTerminalService : ITerminalService
+    {
+        public void CreateTerminal(CreateTerminalDTO model)
+        {
+            // Chain-specific logic
+        }
+    }
+
+    public class WholesalerTerminalService : ITerminalService
+    {
+        public void CreateTerminal(CreateTerminalDTO model)
+        {
+            // Wholesaler-specific logic
+        }
+    }
+
+// Step 3: Factory Class    
+
+    public static class TerminalFactory
+    {
+        public static ITerminalService Create(string terminalType)
+        {
+            return terminalType switch
+            {
+                "Retailer" => new RetailerTerminalService(),
+                "Chain"     => new ChainTerminalService(),
+                "Wholesaler" => new WholesalerTerminalService(),
+                _ => throw new Exception("Unsupported terminal type")
+            };
+        }
+    }
+
+// Step 4: Controller Usage (Clean & Professional)
+
+    [HttpPost("process")]
+    public IActionResult Process(CreateTerminalDTO model)
+    {
+        var type = TerminalFactory.Create(model.terminalType);
+        type.CreateTerminal(model);
+
+        return Ok();
+    }
+
+```    
+
+✅ Why This Is Senior-Level.   
+    - Controller has zero creation logic.   
+    - Easy to add new terminal types.     
+    - Object creation centralized.  
+    - Very testable. 
 
 
+Factory vs Strategy (INTERVIEW GOLD ⭐)
+
+Factory Pattern.   
+    - Creates objects.   
+    - Decides which class to instantiate.   
+    - Focus: object creation.  
+
+
+Strategy Pattern   
+    - Executes behavior.     
+    - Decides which algorithm to run.  
+    - Focus: business logic. 
+
+Factory creates the strategy
+Strategy executes the logic      
+
+
+Use Factory when:  
+    - Object creation depends on input.   
+    - Multiple implementations exist.   
+    - You want to hide new keyword usage.   
+    - Creation logic is complex or repeated.   
+Avoid Factory when:    
+    - Only one implementation.   
+    - Object creation is trivial.           
+
+## What Is the Abstract Factory Pattern?
+Abstract Factory Pattern provides an interface for creating families of related or dependent objects without specifying their concrete classes.
+
+In simple words:  
+    - Factory → creates one type of object.   
+    - Abstract Factory → creates a group (family) of related objects.  
+    - The client does not know which concrete classes are used.   
+
+Factory = one product.   
+Abstract Factory = family of products.
+
+Why Do We Need Abstract Factory?  
+    Because sometimes one decision affects multiple objects.
+
+If you choose:  
+    - Terminal Type = Android.   
+    - Then you must also use:  
+    - Android printer.   
+    - Android receipt formatter.   
+    - Android sync service.   
+These objects must be consistent with each other.
+
+EPOS Scenario: Terminal Ecosystem.   
+Your EPOS system supports:   
+    Android Terminal.   
+    POS Hardware Terminal.   
+    Web Terminal.   
+
+Each terminal type requires a set of related components:
+| Component         | Android          | POS          | Web          |
+| ----------------- | ---------------- | ------------ | ------------ |
+| Receipt Printer   | AndroidPrinter   | PosPrinter   | WebPrinter   |
+| Receipt Formatter | AndroidFormatter | PosFormatter | WebFormatter |
+| Sync Service      | AndroidSync      | PosSync      | WebSync      |
+
+❌ Problem Without Abstract Factory
+
+
+```CSharp
+var printer = new AndroidPrinter();
+var formatter = new PosFormatter();   // ❌ mismatch
+var sync = new WebSync();              // ❌ mismatch
+
+```
+
+This creates runtime bugs.    
+4️⃣ Abstract Factory Structure.   
+4 Core Parts:    
+    Abstract Factory Interface.   
+    Concrete Factories.  
+    Abstract Products.   
+    Concrete Products.   
+
+```CSharp
+// Step 1️⃣ Abstract Products (Interfaces)
+public interface IReceiptPrinter
+{
+    void Print(string content);
+}
+
+public interface IReceiptFormatter
+{
+    string Format(string data);
+}
+
+public interface ISyncService
+{
+    void Sync();
+}
+// Step 2️⃣ Abstract Factory Interface
+public interface ITerminalFactory
+{
+    IReceiptPrinter CreatePrinter();
+    IReceiptFormatter CreateFormatter();
+    ISyncService CreateSyncService();
+}
+// Step 3️⃣ Concrete Factory – Android Terminal
+public class AndroidTerminalFactory : ITerminalFactory
+{
+    public IReceiptPrinter CreatePrinter()
+        => new AndroidReceiptPrinter();
+
+    public IReceiptFormatter CreateFormatter()
+        => new AndroidReceiptFormatter();
+
+    public ISyncService CreateSyncService()
+        => new AndroidSyncService();
+}
+// Step 4️⃣ Concrete Factory – POS Terminal
+public class PosTerminalFactory : ITerminalFactory
+{
+    public IReceiptPrinter CreatePrinter()
+        => new PosReceiptPrinter();
+
+    public IReceiptFormatter CreateFormatter()
+        => new PosReceiptFormatter();
+
+    public ISyncService CreateSyncService()
+        => new PosSyncService();
+}
+// Step 5️⃣ Client Code (Controller / Service)
+public class ReceiptService
+{
+    private readonly IReceiptPrinter _printer;
+    private readonly IReceiptFormatter _formatter;
+    private readonly ISyncService _sync;
+
+    public ReceiptService(ITerminalFactory factory)
+    {
+        _printer = factory.CreatePrinter();
+        _formatter = factory.CreateFormatter();
+        _sync = factory.CreateSyncService();
+    }
+}
+```
+✔ Client never knows:  
+    Which printer.   
+    Which formatter.    
+    Which sync service.    
+
+✔ Consistency guaranteed
+
+6️⃣ Factory vs Abstract Factory (Clear Comparison).   
+| Pattern            | What it creates           |
+| ------------------ | ------------------------- |
+| Factory            | One object                |
+| Abstract Factory   | Family of related objects |
+| Strategy           | Behavior                  |
+| Factory + Strategy | Creation + behavior       |
+| Abstract Factory   | Creation + consistency    |
+
+
+7️⃣ When to Use Abstract Factory (Interview Checklist).   
+Use it when:    
+    - You must create multiple related objects.   
+    - Objects must be compatible.   
+    - System supports multiple platforms / environments.   
+    - You want to switch entire families at runtime
+Avoid it when:   
+    - Only one object needed.       
+    - No dependency between objects.   
+    - Simpler Factory is enough     
+
+
+“Abstract Factory is used when the system needs to create families of related objects.
+In EPOS, it helps ensure terminal-specific components like printers, formatters, and sync services are created consistently without leaking implementation details.”
+That answer alone = senior-level clarity.
+
+## Builder Pattern
+Builder Pattern separates the construction of a complex object from its representation, allowing you to build it step by step.
+
+```CSharp
+// Step 1️⃣ Final Object (What We Want at the End)
+public class TransactionReport
+{
+    public string Merchant { get; set; }
+    public string Terminal { get; set; }
+    public decimal Amount { get; set; }
+    public decimal? Gst { get; set; }
+    public decimal? Discount { get; set; }
+    public bool SettlementIncluded { get; set; }
+    public bool SignatureIncluded { get; set; }
+}
+
+// This class is simple.
+// Builder is NOT here yet.
+
+// Step 2️⃣ Builder (This Is the Key Part)
+// Builder does NOT represent the report.
+// Builder knows how to construct it.
+
+public class TransactionReportBuilder
+{
+    private TransactionReport _report = new();
+
+    public TransactionReportBuilder AddMerchant(string merchant)
+    {
+        _report.Merchant = merchant;
+        return this;
+    }
+
+    public TransactionReportBuilder AddTerminal(string terminal)
+    {
+        _report.Terminal = terminal;
+        return this;
+    }
+
+    public TransactionReportBuilder AddAmount(decimal amount)
+    {
+        _report.Amount = amount;
+        return this;
+    }
+
+    public TransactionReportBuilder AddGst(decimal gst)
+    {
+        _report.Gst = gst;
+        return this;
+    }
+
+    public TransactionReportBuilder AddDiscount(decimal discount)
+    {
+        _report.Discount = discount;
+        return this;
+    }
+
+    public TransactionReportBuilder IncludeSettlement()
+    {
+        _report.SettlementIncluded = true;
+        return this;
+    }
+
+    public TransactionReportBuilder IncludeSignature()
+    {
+        _report.SignatureIncluded = true;
+        return this;
+    }
+
+    public TransactionReport Build()
+    {
+        return _report;
+    }
+}
+
+//Important
+//Each method sets ONE thing
+//Each method returns this
+//Build() gives the final object
+
+// Step 3️⃣ Using Builder
+
+var report = new TransactionReportBuilder()
+    .AddMerchant("ABC Store")
+    .AddTerminal("T001")
+    .AddAmount(1000)
+    .Build();
+
+// Case 2: Full Report
+var report = new TransactionReportBuilder()
+    .AddMerchant("ABC Store")
+    .AddTerminal("T001")
+    .AddAmount(1000)
+    .AddGst(50)
+    .AddDiscount(20)
+    .IncludeSettlement()
+    .IncludeSignature()
+    .Build();
+// 👉 Same object
+// 👉 Different structure
+// 👉 No confusion
+
+```
+“I use the Builder pattern when creating complex EPOS objects like reports, where many fields are optional.
+It improves readability, avoids constructor overloads, and makes object creation safer.”
+
+
+## Observer Pattern
+The core problem:  
+One change happens, and many other parts of the system must react to it.  
+But:  
+They should not be tightly coupled.   
+The main object should not know who is listening.   
+
+❌ Bad Design (What Many Systems Do)
+```CSharp
+UpdateTicket()
+{
+    UpdateTicketTable();
+    UpdateHistory();
+    SendEmail();
+    UpdateSla();
+}
+```
+Why this is bad:  
+    Ticket service knows too much.   
+    If tomorrow you add:  
+            Push notification
+            Audit logging
+            You must modify this method again
+Violates Open–Closed Principle
+Hard to test
+This is tight coupling.
+
+Observer Pattern Fix (Correct Design).  
+Key Idea:    
+Ticket service should only say:  
+“Ticket is updated.”    
+It should NOT care what happens next.   
+Other parts of the system will listen and react.
+
+| Your Scenario  | Observer Pattern Role |
+| -------------- | --------------------- |
+| Ticket updated | **Event / Subject**   |
+| Update history | **Observer**          |
+| Send email     | **Observer**          |
+| Update SLA     | **Observer**          |
+
+```CSharp
+// Step 1️⃣ Observer Interface
+public interface ITicketObserver
+{
+    void OnTicketUpdated(int ticketId);
+}
+
+
+// Step 2️⃣ Observers (Your Exact Requirements)
+// 🔹 History Observer
+public class TicketHistoryObserver : ITicketObserver
+{
+    public void OnTicketUpdated(int ticketId)
+    {
+        // Insert into ticket history table
+    }
+}
+// Email Observer
+public class TicketEmailObserver : ITicketObserver
+{
+    public void OnTicketUpdated(int ticketId)
+    {
+        // Send email notification
+    }
+}
+//🔹 SLA Observer
+public class TicketSlaObserver : ITicketObserver
+{
+    public void OnTicketUpdated(int ticketId)
+    {
+        // Recalculate SLA
+    }
+}
+
+// Step 3️⃣ Subject (Ticket Service)
+
+public class TicketService
+{
+    private readonly IEnumerable<ITicketObserver> _observers;
+
+    public TicketService(IEnumerable<ITicketObserver> observers)
+    {
+        _observers = observers;
+    }
+
+    public void UpdateTicket(int ticketId)
+    {
+        // Update ticket data in DB
+
+        NotifyObservers(ticketId);
+    }
+
+    private void NotifyObservers(int ticketId)
+    {
+        foreach (var observer in _observers)
+        {
+            observer.OnTicketUpdated(ticketId);
+        }
+    }
+}
+
+
+// program.cs
+builder.Services.AddScoped<TicketService>();
+
+builder.Services.AddScoped<ITicketObserver, TicketHistoryObserver>();
+builder.Services.AddScoped<ITicketObserver, TicketEmailObserver>();
+builder.Services.AddScoped<ITicketObserver, TicketSlaObserver>();
+
+// Controller
+[ApiController]
+[Route("api/tickets")]
+public class TicketController : ControllerBase
+{
+    private readonly TicketService _ticketService;
+
+    public TicketController(TicketService ticketService)
+    {
+        _ticketService = ticketService;
+    }
+
+    [HttpPut("{ticketId}")]
+    public async Task<IActionResult> UpdateTicket(int ticketId)
+    {
+        await _ticketService.UpdateTicketAsync(ticketId);
+        return Ok("Ticket updated successfully");
+    }
+}
+
+
+
+
+```
+Each class:  
+Does one job.  
+Is independent.  
+Can be tested separately. 
+
+“When a ticket is updated, multiple actions like history update, email notification, and SLA recalculation must happen.
+I use the Observer pattern so these actions remain decoupled from the ticket update logic and can evolve independently.”
 
 ## Explain about Async and Await?  
 
