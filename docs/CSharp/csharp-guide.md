@@ -1,10 +1,62 @@
 # C# – Basics
 
-1) [SOLID?](#1-solid)
-2) [Singleton Pattern?](#singleton-pattern)
+1) [GC?](#gc)
+2) [SOLID?](#1-solid)
+3) [Singleton Pattern?](#singleton-pattern)
+
+## 1. GC
+
+Garbage Collector (GC) in C# is an automatic memory management system that:  
+    - Allocates memory for objects on the managed heap.   
+    - Tracks which objects are still in use.    
+    - Automatically reclaims memory from objects that are no longer         referenced.   
+
+A runtime service that balances developer productivity, application safety, and system performance—at the cost of non-deterministic execution.
+
+Why GC Exists.   
+Without GC:    
+    - Developers must manually allocate/free memory   
+    - Memory leaks, dangling pointers, crashes are common.    
+    - Development speed drops.    
+With GC:    
+    ✔ Faster development.  
+    ✔ Memory safety.  
+    ✔ Fewer production crashes.  
+    ❌ Less control over when memory is freed.   
+
+➡ Architecture trade-off: safety & productivity vs predictability.   
+
+Object lifecycle:  
+    Object created → allocated on Managed Heap.    
+    Object used by application.   
+    No references remain → object becomes eligible for GC.  
+    GC reclaims memory later (not immediately).   
+
+You cannot predict when GC runs
 
 
-## 1. SOLID
+Generational Garbage Collection (Critical Concept).   
+.NET GC is Generational, based on this principle:  
+        **Most objects die young.**   
+Generations:    
+Gen 0	Short-lived objects (requests, DTOs, temp objects).   
+Gen 1	Medium-lived objects.     
+Gen 2	Long-lived objects (singletons, caches).     
+LOH	Large objects (> 85 KB).     
+
+Why this matters architecturally:    
+    GC focuses mostly on Gen 0 → fast.  
+    Gen 2 collections are expensive.    
+    Poor object lifetime design causes performance degradation.  
+
+GC vs IDisposable (Very Important).  
+GC does NOT manage:   
+File handles.  
+Database connections.   
+Network sockets.   
+OS resources         
+
+## 2. SOLID
 SOLID is a set of 5 design principles that make software:  
 ✔ Maintainable  
 ✔ Extensible  
