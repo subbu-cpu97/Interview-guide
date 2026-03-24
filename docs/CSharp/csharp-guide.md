@@ -1,15 +1,1060 @@
 # C# – Basics
 
-1) [GC?](#gc)
-2) [SOLID?](#1-solid)
-3) [Singleton Pattern?](#singleton-pattern)
+[Polymorphism](#polymorphism)
+[Inheritanc?](#inheritanc?)
+[Abstraction?](#abstraction)  
+[Encapsulation?](#encapsulation)   
+[GC?](#gc)   
+[SOLID?](#1-solid)   
+[Singleton Pattern?](#singleton-pattern)
+
+
+## Polymorphism?   
+Polymorphism allows objects to take multiple forms, enabling the same method or interface to behave differently based on the object’s type.
+
+🧠 Simple Meaning.   
+👉 “One interface, multiple implementations.”  
+
+🔹 Types of Polymorphism in C#.    
+Type	Description.  
+Compile-time	Method overloading.   
+Runtime	Method overriding (using inheritance).   
+
+🔹 1. Compile-Time Polymorphism (Method Overloading)
+~~~CSharp
+public class Calculator
+{
+    public int Add(int a, int b)
+    {
+        return a + b;
+    }
+
+    public double Add(double a, double b)
+    {
+        return a + b;
+    }
+}
+~~~
+👉 Same method name → different parameters.  
+👉 Decided at compile time.  
+
+🔹 2. Runtime Polymorphism (Method Overriding).   
+~~~CSharp
+public class Payment
+{
+    public virtual void Pay()
+    {
+        Console.WriteLine("Base payment");
+    }
+}
+public class UpiPayment : Payment
+{
+    public override void Pay()
+    {
+        Console.WriteLine("UPI payment");
+    }
+}
+
+🔹 Usage 
+Payment payment = new UpiPayment();
+payment.Pay(); // ✅ Calls derived method
+~~~
+👉 Decided at runtime.   
+🔥 Why Polymorphism is Important (Architect View).  
+Enables extensibility (OCP).   
+Reduces if-else / switch complexity.   
+Supports plug-and-play architecture.   
+Enables strategy pattern, dependency injection.   
+🔹 Keywords (Very Important).   
+🔸 1. virtual.  
+👉 Allows a method to be overridden in derived class.  
+~~~CSharp
+public class Animal
+{
+    public virtual void Speak()
+    {
+        Console.WriteLine("Animal sound");
+    }
+}
+~~~
+🔸 2. override.  
+👉 Used in derived class to change base behavior.  
+~~~CSharp
+public class Dog : Animal
+{
+    public override void Speak()
+    {
+        Console.WriteLine("Bark");
+    }
+}
+~~~
+🔸 3. new (Method Hiding).  
+👉 Hides base class method (not true polymorphism).   
+~~~CSharp
+public class BaseClass
+{
+    public void Show()
+    {
+        Console.WriteLine("Base");
+    }
+}
+public class DerivedClass : BaseClass
+{
+    public new void Show()
+    {
+        Console.WriteLine("Derived");
+    }
+}
+⚠️ Important Behavior
+BaseClass obj = new DerivedClass();
+obj.Show(); // ❌ Calls Base method (not polymorphism)
+
+👉 Because new = method hiding
+👉 NOT runtime polymorphism
+~~~
+
+
+🔸 4. abstract.   
+👉 Defines a method without implementation (must override).   
+~~~CSharp
+public abstract class Shape
+{
+    public abstract void Draw(); // no implementation
+}
+public class Circle : Shape
+{
+    public override void Draw()
+    {
+        Console.WriteLine("Drawing Circle");
+    }
+}
+~~~
+
+🔸 5. sealed
+👉 Prevent further overriding
+
+~~~CSharp
+public class Base
+{
+    public virtual void Run() { }
+}
+
+public class Child : Base
+{
+    public sealed override void Run() { }
+}
+~~~
+👉 No further class can override Run().   
+🔸 6. Interface-based Polymorphism (Most Used in Real Projects).   
+~~~CSharp
+public interface INotification
+{
+    void Send();
+}
+public class EmailNotification : INotification
+{
+    public void Send()
+    {
+        Console.WriteLine("Email sent");
+    }
+}
+public class SmsNotification : INotification
+{
+    public void Send()
+    {
+        Console.WriteLine("SMS sent");
+    }
+}
+Usage
+INotification notification = new EmailNotification();
+notification.Send();
+👉 This is real-world polymorphism (used in DI, microservices)
+
+public interface ITicketProcessor
+{
+    void Process();
+}
+public class HardwareTicketProcessor : ITicketProcessor
+{
+    public void Process()
+    {
+        Console.WriteLine("Hardware processing");
+    }
+}
+public class SoftwareTicketProcessor : ITicketProcessor
+{
+    public void Process()
+    {
+        Console.WriteLine("Software processing");
+    }
+}
+👉 At runtime:
+ITicketProcessor processor = GetProcessor();
+processor.Process();
+~~~
+✔ No if-else.  
+✔ Easily extensible.  
+🚨 Common Interview Mistakes. 
+❌ Saying:   
+“Polymorphism is just overriding”.  
+✔ It includes overloading + overriding + interfaces.  
+❌ Confusing new with override.  
+🎯 Final Interview Answer (Strong).   
+
+👉
+“Polymorphism allows objects to behave differently through a common interface. It is achieved via method overloading at compile time and method overriding or interfaces at runtime. Keywords like virtual, override, and abstract enable runtime polymorphism, while ‘new’ is used for method hiding and does not support true polymorphism.”
+
+
+## Inheritanc?
+Inheritance is a mechanism that allows a class (child/derived) to acquire the properties and behaviors of another class (parent/base), enabling code reuse, extensibility, and polymorphic behavior.   
+
+🧠 Simple Meaning.   
+👉 “Write once in base class, reuse and extend in derived classes.”     
+
+🔹 Basic Example (Foundation)
+~~~CSharp
+public class Vehicle
+{
+    public void Start()
+    {
+        Console.WriteLine("Vehicle started");
+    }
+}
+public class Car : Vehicle
+{
+    public void Drive()
+    {
+        Console.WriteLine("Car is driving");
+    }
+}
+~~~
+
+👉 Car inherits Start() from Vehicle.   
+
+🔥 Why Inheritance is Used (Architect Thinking).  
+   
+✅ 1. Code Reusability.   
+Common logic in base class.    
+✅ 2. Extensibility.     
+Add new behavior without modifying existing code.   
+✅ 3. Polymorphism Support.   
+Treat multiple objects uniformly.    
+✅ 4. Domain Modeling.    
+Represents “is-a” relationship.   
+🔹 Real-World Example (Your Domain – Ticketing System).    
+~~~CSharp
+public class Ticket
+{
+    public int Id { get; set; }
+    public string Issue { get; set; }
+
+    public void Create()
+    {
+        Console.WriteLine("Ticket created");
+    }
+}
+public class HardwareTicket : Ticket
+{
+    public string DeviceType { get; set; }
+}
+public class SoftwareTicket : Ticket
+{
+    public string ApplicationName { get; set; }
+}
+~~~~
+
+👉 Both share common behavior.   
+👉 Extend with specific fields.   
+🔹 Types of Inheritance in C#.  
+Type	Supported in C#.      
+| Type                 | Supported in C# |
+| -------------------- | --------------- |
+| Single               | ✅               |
+| Multilevel           | ✅               |
+| Hierarchical         | ✅               |
+| Multiple (class)     | ❌               |
+| Multiple (interface) | ✅               |
+
+🔹 Method Overriding (Runtime Polymorphism).  
+~~~CSharp
+public class Payment
+{
+    public virtual void Pay()
+    {
+        Console.WriteLine("Base payment");
+    }
+}
+public class UpiPayment : Payment
+{
+    public override void Pay()
+    {
+        Console.WriteLine("UPI payment");
+    }
+}
+
+🔹 Usage.  
+Payment payment = new UpiPayment();   
+payment.Pay(); // ✅ Calls derived implementation
+~~~
+
+👉 This is polymorphism using inheritance. 
+
+virtual → can be overridden.  
+override → change base behavior.  
+sealed → prevent further inheritance.  
+base → call parent implementation. 
+Example.  
+~~~CSharp
+public class BaseService
+{
+    public virtual void Execute()
+    {
+        Console.WriteLine("Base logic");
+    }
+}
+public class CustomService : BaseService
+{
+    public override void Execute()
+    {
+        base.Execute(); // reuse base logic
+        Console.WriteLine("Extended logic");
+    }
+}
+~~~
+
+👉 Inheritance can lead to tight coupling.  
+
+~~~CSharp
+❌ Bad Design:
+public class Bird
+{
+    public virtual void Fly() { }
+}
+
+public class Ostrich : Bird
+{
+    public override void Fly()
+    {
+        throw new Exception("Cannot fly"); // ❌ Design problem
+    }
+}
+~~~
+👉 Violates LSP (Liskov Substitution Principle)
+
+✅ Better: Composition
+
+~~~CSharp
+
+public interface IFlyBehavior
+{
+    void Fly();
+}
+public class NoFly : IFlyBehavior
+{
+    public void Fly()
+    {
+        Console.WriteLine("Cannot fly");
+    }
+}
+~~~
+👉 More flexible than inheritance.  
+🔹 2. Inheritance + SOLID Principles.  
+LSP → Derived class should not break base behavior.  
+OCP → Extend without modifying base class.  
+🔹 3. Template Method Pattern.  
+
+~~~CSharp
+public abstract class ReportGenerator.  
+{
+    public void Generate()
+    {
+        FetchData();
+        ProcessData();
+        Export();
+    }
+
+    protected abstract void FetchData();
+    protected abstract void ProcessData();
+
+    protected void Export()
+    {
+        Console.WriteLine("Exporting report");
+    }
+}
+~~~
+
+👉 Common structure + customizable steps.  
+🔹 4. When NOT to Use Inheritance.  
+❌ If relationship is not “is-a”.  
+❌ If behavior varies too much.  
+❌ If it breaks LSP. 
+🔥 Encapsulation + Inheritance Together.  
+~~~CSharp
+public class Account.   
+{
+    protected decimal Balance; // accessible in child
+
+    public void Deposit(decimal amount)
+    {
+        Balance += amount;
+    }
+}
+public class SavingsAccount : Account
+{
+    public void AddInterest()
+    {
+        Balance += Balance * 0.05m;
+    }
+}
+~~~
+
+👉 Controlled exposure using protected.  
+🎯 Final Architect Answer (Short Version).  
+👉
+“Inheritance is a mechanism to derive new classes from existing ones to promote reuse, extensibility, and polymorphism. However, in modern architecture, it should be used carefully, favoring composition when flexibility and loose coupling are required.”
+
+## Abstraction?
+Abstraction is the process of hiding complex implementation details and exposing only the essential features to the user.     
+
+🧠 Simple Meaning.    
+👉 “Show what is necessary, hide how it works.”    
+🔹 Real-World Example.  
+Think about a car 🚗.   
+You press accelerator.   
+You don’t know:      
+how fuel injects.  
+how engine works internally.  
+👉 You just use it
+✔ That is abstraction
+
+🔹 Example in C#
+
+✅ Using Interface (Best Example)
+// 🔹 Abstraction: defines WHAT to do
+~~~CSharp
+public interface IPaymentService
+{
+    void Pay(decimal amount);
+}
+// 🔹 Implementation: defines HOW it works
+public class UpiPayment : IPaymentService
+{
+    public void Pay(decimal amount)
+    {
+        Console.WriteLine("Paid using UPI");
+    }
+}
+public class CreditCardPayment : IPaymentService
+{
+    public void Pay(decimal amount)
+    {
+        Console.WriteLine("Paid using Credit Card");
+    }
+}
+🔹 Usage
+IPaymentService payment = new UpiPayment();
+payment.Pay(1000);
+~~~
+🔥 Key Point.  
+👉 Caller doesn’t know:    
+how UPI works.   
+how credit card works.  
+👉 Only knows:   
+✔ Pay() method.   
+🔹 Using Abstract Class.  
+~~~CSharp
+public abstract class Vehicle
+{
+    // 🔹 Abstract method (no implementation)
+    public abstract void Start();
+
+    // 🔹 Concrete method
+    public void Stop()
+    {
+        Console.WriteLine("Vehicle stopped");
+    }
+}
+public class Car : Vehicle
+{
+    public override void Start()
+    {
+        Console.WriteLine("Car started with key");
+    }
+}
+~~~
+🔥 Why Do We Need Abstraction?     
+✅ 1. Reduce Complexity.   
+Hide internal logic.   
+✅ 2. Improve Flexibility.   
+Change implementation without affecting usage.  
+✅ 3. Promote Loose Coupling.  
+Depend on interface, not implementation.  
+✅ 4. Better Maintainability.   
+Easy to extend system.   
+🔥 Encapsulation vs Abstraction (Must Know). 
+Feature	    Encapsulation	    Abstraction.    
+Focus	Data hiding	            Hiding complexity. 
+Goal	Protect data	Simplify usage.   
+Example	private fields	interfaces.  
+Question	“Who can access?”	“What to expose?”    
+
+
+🎯 Architect-Level Example (Real Project) 
+~~~CSharp
+public interface ITicketService
+{
+    void CreateTicket(string issue);
+}
+👉 In your system:
+Different countries → different implementations
+public class IndiaTicketService : ITicketService
+{
+    public void CreateTicket(string issue)
+    {
+        // India-specific logic
+    }
+}
+public class USATicketService : ITicketService
+{
+    public void CreateTicket(string issue)
+    {
+        // USA-specific logic
+    }
+}
+👉 Controller only knows:
+_ticketService.CreateTicket("POS issue");
+~~~
+✔ That’s abstraction in real systems
+    
+
+## Encapsulation
+
+Encapsulation is the concept of wrapping data (fields) and behavior (methods) together into a single unit (class) and restricting direct access to the internal state of that object.      
+
+n simple terms:  
+👉 “Hide the internal details and expose only what is necessary.”  
+
+Why do we need Encapsulation?
+
+**Data Protection**  
+    Prevents invalid or unauthorized changes to data.  
+**Control Over Data**  
+    You can validate before setting values.   
+**Loose Coupling**  
+    External code doesn’t depend on internal implementation.  
+**Maintainability**
+    You can change internal logic without breaking other parts.  
+
+How Encapsulation is Achieved in C#.   
+Using:    
+ 1) private, protected, public access modifiers.    
+ 2) Properties (get, set).    
+ 3) Methods.
+
+```CSharp
+public class BankAccount
+{
+    private decimal _balance; // Hidden data
+
+    public decimal Balance
+    {
+        get { return _balance; }
+        private set // Restrict external modification
+        {
+            if (value < 0)
+                throw new ArgumentException("Balance cannot be negative");
+
+            _balance = value;
+        }
+    }
+
+    public void Deposit(decimal amount)
+    {
+        if (amount <= 0)
+            throw new ArgumentException("Invalid amount");
+
+        Balance += amount;
+    }
+
+    public void Withdraw(decimal amount)
+    {
+        if (amount > Balance)
+            throw new InvalidOperationException("Insufficient funds");
+
+        Balance -= amount;
+    }
+}
+```
+
+**Key Interview Points (Very Important)**.   
+Encapsulation ≠ just making fields private.   
+👉 It is about controlling access + enforcing rules.   
+Properties are not just getters/setters.     
+👉 They are validation gates.   
+Encapsulation helps enforce business rules inside the domain.  
+
+“Encapsulation is the principle of hiding internal state and exposing controlled access through well-defined interfaces to ensure data integrity and maintainability.”
+
+I’ll go step by step with clear real-world examples + comments in code.    
+
+🔹 1. Data Protection.   
+👉 Prevent invalid or unauthorized changes.   
+❌ Without Encapsulation (Bad Design).   
+
+```CSharp
+public class Employee.  
+{
+    public int Age; // ❌ Anyone can directly modify
+}
+
+// Somewhere else in code
+var emp = new Employee();
+emp.Age = -10; // ❌ Invalid data allowed
+```
+
+✅ With Encapsulation (Good Design).   
+
+```CSharp
+public class Employee
+{
+    private int _age; // 🔒 Hidden field (data protection)
+
+    public int Age
+    {
+        get { return _age; } // 👁 Read access allowed
+
+        set
+        {
+            // ✅ Validation logic (prevents invalid data)
+            if (value < 18)
+                throw new ArgumentException("Age must be >= 18");
+
+            _age = value;
+        }
+    }
+}
+
+// Usage
+var emp = new Employee();
+emp.Age = 25;  // ✅ Valid
+// emp.Age = -10; ❌ Exception thrown
+```
+🔹 2. Control Over Data.   
+👉 You control how data is set.   
+
+```CSharp
+public class Product
+{
+    private decimal _price;
+
+    public decimal Price
+    {
+        get { return _price; }
+
+        set
+        {
+            // ✅ Control: applying business rule
+            if (value <= 0)
+                throw new ArgumentException("Price must be greater than 0");
+
+            // ✅ Additional logic (example: logging, rounding, etc.)
+            _price = Math.Round(value, 2);
+        }
+    }
+}
+```
+
+
+👉 Here:   
+We control input.   
+We modify behavior internally.   
+
+🔹 3. Loose Coupling.   
+👉 External code should not depend on internal logic.
+```CSharp    
+public class Order
+{
+    private List<string> _items = new List<string>(); // 🔒 Internal structure
+
+    // ✅ Only expose behavior, not internal data
+    public void AddItem(string item)
+    {
+        _items.Add(item);
+    }
+
+    public int GetItemCount()
+    {
+        return _items.Count;
+    }
+}
+
+// Usage
+var order = new Order();
+order.AddItem("Laptop");
+```
+// ❌ External code cannot do this:   
+// order._items.Clear();  (Not allowed).  
+👉 Benefit:    
+Later you can change List<string> → HashSet<string>.  
+No external code breaks.  
+
+🔹 4. Maintainability.  
+👉 Change internal logic without breaking external code.  
+```CSharp
+public class DiscountService
+{
+    private decimal _discount;
+
+    public decimal Discount
+    {
+        get { return _discount; }
+
+        set
+        {
+            // Today logic
+            _discount = value;
+        }
+    }
+}
+👉 Later you change logic:
+set
+{
+    // ✅ Changed internal logic
+    if (value > 50)
+        throw new ArgumentException("Max discount is 50%");
+
+    _discount = value;
+}
+👉 External code still:
+service.Discount = 30; // No change needed
+```
+
+🔹 5. How Encapsulation is Achieved in C#.   
+
+✅ Access Modifiers.   
+
+```CSharp
+public class User
+{
+    private string _password; // 🔒 Only accessible inside class
+
+    protected string Role; // 🔐 Accessible in derived classes
+
+    public string Username; // 🌍 Accessible everywhere
+}
+✅ Properties
+public class Account
+{
+    private decimal _balance;
+
+    public decimal Balance
+    {
+        get { return _balance; } // Read
+
+        private set // 🔒 Only class can modify
+        {
+            _balance = value;
+        }
+    }
+}
+✅ Methods (Best Practice)
+public class BankAccount
+{
+    private decimal _balance;
+
+    // ✅ Only way to modify balance
+    public void Deposit(decimal amount)
+    {
+        if (amount <= 0)
+            throw new ArgumentException("Invalid amount");
+
+        _balance += amount;
+    }
+
+    public decimal GetBalance()
+    {
+        return _balance;
+    }
+}
+```
+👉 This is true encapsulation.  
+👉 Not just properties, but behavior control.  
+🔥 Architect-Level Insight (Important).  
+👉 Encapsulation is not about getters/setters.  
+It is about:   
+✔ Protecting invariants.  
+✔ Enforcing business rules.  
+✔ Hiding complexity.  
+✔ Exposing only required behavior.  
+🚨 Common Mistake (Interview Trap).  
+```CSharp
+public class Customer
+{
+    public string Name { get; set; } // ❌ Not true encapsulation
+}
+```
+
+👉 Why?  
+No validation. 
+No control.     
+✔ Better:   
+
+```CSharp
+public string Name
+{
+    get => _name;
+    set
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            throw new Exception("Invalid name");
+
+        _name = value;
+    }
+}
+```
+
+
+
+
+🔹 1. Immutable Objects.  
+👉 Definition:   
+An object whose state cannot be changed after creation.   
+✅ Example.      
+
+```CSharp
+public class User
+{
+    public string Name { get; }
+    public int Age { get; }
+
+    // ✅ Values are set only once (constructor)
+    public User(string name, int age)
+    {
+        if (age < 18)
+            throw new ArgumentException("Invalid age");
+
+        Name = name;
+        Age = age;
+    }
+}
+```
+🔥 Why this is powerful.  
+Thread-safe (no race conditions).  
+Predictable behavior.  
+No accidental modification.  
+👉 Architect Answer:
+“Immutable objects enforce encapsulation by preventing state mutation after initialization.”   
+
+🔹 2. Read-only Properties (init, private set).   
+✅ Using private set.    
+```CSharp
+public class Account
+{
+    public decimal Balance { get; private set; } // 🔒 Only class can modify
+
+    public void Deposit(decimal amount)
+    {
+        Balance += amount;
+    }
+}
+```
+👉 External code cannot modify Balance directly.    
+✅ Using init (C# 9+).   
+```CSharp
+public class Customer
+{
+    public string Name { get; init; } // ✅ Set only during object creation
+}
+
+// Usage
+var customer = new Customer { Name = "Subramanyam" };
+```
+
+// ❌ customer.Name = "New Name"; (Not allowed after creation).    
+🔥 Key Difference
+Feature 	            private set 	init.  
+Modify inside class	            ✅	    ❌.   
+Modify during creation	        ✅	    ✅.  
+Immutable style	                ❌      	✅.    
+
+🔹 3. Encapsulation in Domain-Driven Design (DDD).    
+👉 This is very important for architect interviews.  
+❌ Anemic Model (Bad).   
+
+```CSharp
+public class Order 
+{
+    public decimal Total { get; set; }
+}
+```
+👉 No rules, no behavior
+✅ Rich Domain Model (Encapsulation)
+```CSharp
+public class Order
+{
+    private readonly List<string> _items = new();
+    public IReadOnlyList<string> Items => _items.AsReadOnly(); // 🔒 Safe exposure
+
+    public decimal Total { get; private set; }
+
+    public void AddItem(string item, decimal price)
+    {
+        if (string.IsNullOrEmpty(item))
+            throw new ArgumentException("Invalid item");
+
+        _items.Add(item);
+        Total += price;
+    }
+}
+```
+🔥 Architect Insight.   
+👉 “In DDD, encapsulation ensures business rules live inside the domain, not outside services.”   
+🔹 4. Encapsulation vs Abstraction (🔥 VERY IMPORTANT).   
+✅ Encapsulation.  
+👉 How data is protected.  
+Hides internal state.  
+Uses access modifiers.  
+Focus: data safety. 
+✅ Abstraction.  
+👉 What is exposed to the outside.  
+Hides complexity.  
+Shows only necessary features.  
+Focus: design simplicity.  
+🔥 Example.    
+```CSharp
+// Abstraction 
+public interface IPaymentService
+{
+    void Pay(decimal amount);
+}
+
+// Encapsulation
+public class PaymentService : IPaymentService
+{
+    private decimal _balance; // 🔒 hidden
+
+    public void Pay(decimal amount)
+    {
+        if (amount <= 0)
+            throw new Exception("Invalid");
+
+        _balance -= amount;
+    }
+}
+```
+🎯 Interview One-liner
+👉
+Encapsulation = hiding data.  
+Abstraction = hiding complexity.  
+🔹 5. Encapsulation using Interfaces.  
+👉 Interfaces help expose only required behavior.  
+Example
+```CSharp
+public interface IBankAccount
+{
+    void Deposit(decimal amount);
+    decimal GetBalance();
+}
+public class BankAccount : IBankAccount
+{
+    private decimal _balance; // 🔒 hidden
+
+    public void Deposit(decimal amount)
+    {
+        _balance += amount;
+    }
+
+    public decimal GetBalance()
+    {
+        return _balance;
+    }
+}
+```
+🔥 Benefit
+External code cannot access internal fields
+Only interacts through contract
+🔹 6. Encapsulation in APIs (DTO vs Domain Model)
+👉 Very common in real projects (your ticketing system also)
+❌ Problem (No Encapsulation)
+```CSharp
+public class User
+{
+    public string Password { get; set; } // ❌ exposed
+}
+✅ Proper Design
+🔹 Domain Model (Encapsulated)
+public class User
+{
+    private string _password;
+
+    public string Username { get; private set; }
+
+    public void SetPassword(string password)
+    {
+        if (password.Length < 6)
+            throw new Exception("Weak password");
+
+        _password = password;
+    }
+}
+
+🔹 DTO (Data Transfer Object)
+public class UserDto
+{
+    public string Username { get; set; }
+    public string Password { get; set; }
+}
+```
+🔥 Flow.    
+Controller → DTO → Domain Model.  
+👉 Domain enforces rules.  
+👉 DTO only transfers data. 
+🔥 Architect Insight.   
+“DTOs expose data, domain models protect invariants using encapsulation.”   
+🧠 Final Summary (Interview Ready).   
+Encapsulation is foundation of clean architecture.   
+Used in:    
+Domain models.   
+APIs.   
+Microservices.   
+Prevents:    
+Invalid state.   
+Tight coupling.  
+Security issues.   
+
+### Abstraction vs Encapsulation (Straight Differences)
+
+| Aspect                 | Abstraction                                                    | Encapsulation                                    |
+| ---------------------- | -------------------------------------------------------------- | ------------------------------------------------ |
+| **Definition**         | Hides implementation details and shows only essential features | Hides internal data and restricts direct access  |
+| **Focus**              | *What to expose*                                               | *How to protect data*                            |
+| **Goal**               | Reduce complexity for the user                                 | Ensure data integrity and control                |
+| **Level**              | Design level (high-level view)                                 | Implementation level (low-level control)         |
+| **Achieved Using**     | Interfaces, abstract classes                                   | Access modifiers, properties, methods            |
+| **Hides**              | Complexity of logic                                            | Internal state (data)                            |
+| **User Perspective**   | User sees only available operations                            | User cannot directly modify internal data        |
+| **Example Question**   | “What operations are available?”                               | “Who can access or modify data?”                 |
+| **Real-world Example** | Car driving (you use, don’t know engine)                       | Bank account (you can’t directly change balance) |
+| **Dependency**         | Promotes loose coupling                                        | Promotes controlled access                       |
+
+Strong Interview One-Liner.   
+👉
+“Abstraction focuses on hiding complexity by exposing only required behavior, while encapsulation focuses on protecting data by restricting direct access and enforcing rules.”    
+ 
+🔥 Bonus (What impresses interviewer).  
+👉
+Abstraction = Design decision.  
+Encapsulation = Data protection mechanism.  
+
+
+
 
 ## 1. GC
 
 Garbage Collector (GC) in C# is an automatic memory management system that:  
     - Allocates memory for objects on the managed heap.   
     - Tracks which objects are still in use.    
-    - Automatically reclaims memory from objects that are no longer         referenced.   
+    - Automatically reclaims memory from objects that are no longer referenced.   
 
 A runtime service that balances developer productivity, application safety, and system performance—at the cost of non-deterministic execution.
 
