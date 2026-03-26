@@ -1,9 +1,10 @@
 # C# – Basics
 
-
-
-[Abstract Class?](#abstract-class)  
-[Interface](#Interface)
+[Association?](#association)   
+[Aggregation?](#aggregation)   
+[Composition](#composition)   
+[Abstract Class?](#abstract-class)      
+[Interface](#Interface).  
 [Abstract Class vs Interface](#abstract-class-vs-interface)
 [Polymorphism](#polymorphism)  
 [Inheritanc?](#inheritanc?)    
@@ -12,6 +13,514 @@
 [GC?](#gc)   
 [SOLID?](#1-solid)   
 [Singleton Pattern?](#singleton-pattern)
+
+## Association?
+Association is a relationship where two classes are connected and can interact with each other, but neither owns the other.   
+
+👉 “Objects know each other and work together”.  
+🔹 Explanation.  
+It is the most general relationship     
+Objects are independent.  
+No ownership.  
+Can be:   
+One-to-one.  
+One-to-many.  
+Many-to-many.  
+👉 Aggregation and Composition are special types of Association.  
+
+🧪 Basic Example
+~~~ csharp
+public class Teacher
+{
+    public string Name { get; set; }
+}
+public class Student
+{
+    public string Name { get; set; }
+
+    public void Learn(Teacher teacher) // ✅ Association
+    {
+        Console.WriteLine($"{Name} learns from {teacher.Name}");
+    }
+}
+🔹 Usage
+var teacher = new Teacher { Name = "John" };
+var student = new Student { Name = "Sam" };
+
+student.Learn(teacher);
+
+~~~
+👉 Student and Teacher:
+Exist independently
+Just interact
+🔥 Real-World Example
+👉 Doctor & Patient
+~~~ csharp
+public class Doctor
+{
+    public string Name { get; set; }
+}
+public class Patient
+{
+    public string Name { get; set; }
+
+    public void Consult(Doctor doctor)
+    {
+        Console.WriteLine($"{Name} consults {doctor.Name}");
+    }
+}
+~~~
+👉 No ownership
+👉 Just interaction
+🔥 Types of Association
+🔸 1. One-to-One
+One teacher → one student
+🔸 2. One-to-Many
+One teacher → many students
+🔸 3. Many-to-Many
+Students ↔ multiple teachers
+🔥 Association vs Aggregation vs Composition.  
+| Feature      | Association | Aggregation | Composition  |
+| ------------ | ----------- | ----------- | ------------ |
+| Relationship | General     | Weak has-a  | Strong has-a |
+| Ownership    | ❌ No        | ❌ No        | ✅ Yes        |
+| Lifecycle    | Independent | Independent | Dependent    |
+| Strength     | Weakest     | Medium      | Strongest    |
+
+🔥 Key Interview Insight.   
+👉
+Association = knows/uses relationship.   
+Aggregation = has-a (weak).   
+Composition = has-a (strong ownership).   
+🚨 Common Mistake.  
+❌ Saying:   
+“Association = Aggregation”.  
+✔ No → Aggregation is a type of association.  
+🎯 Final Interview Answer (Strong).  
+👉
+“Association is a general relationship where two objects are aware of each other and interact, without any ownership or lifecycle dependency. Aggregation and composition are specialized forms of association.”
+
+
+
+## Aggregation?
+Aggregation is a relationship where one class contains a reference to another class, but both objects can exist independently.    
+  
+👉 “HAS-A relationship, but with independent lifecycle”.  
+
+🔹 Explanation.   
+It is a weak relationship.  
+Parent object does not own the child object.  
+Child can exist without parent.  
+Objects are loosely connected.  
+
+🧪 Basic Example
+
+~~~ csharp
+public class Department
+{
+    public string Name { get; set; }
+}
+public class Employee
+{
+    public string Name { get; set; }
+
+    private Department _department; // ✅ Aggregation
+
+    public Employee(Department department)
+    {
+        _department = department; // reference passed
+    }
+}
+
+🔹 Usage
+var dept = new Department { Name = "IT" };
+var emp = new Employee(dept);
+
+~~~
+👉 Department exists independently.  
+👉 Employee just uses it.   
+🔥 Real-World Example.  
+👉 College & Student  
+~~~ csharp
+public class Student
+{
+    public string Name { get; set; }
+}
+public class College
+{
+    public List<Student> Students { get; set; }
+
+    public College(List<Student> students)
+    {
+        Students = students; // aggregation
+    }
+}
+~~~
+👉 Students can exist without College. 
+👉 College just groups them.   
+🔥 Aggregation vs Composition (Very Important).  
+| Aspect       | Aggregation         | Composition        |
+| ------------ | ------------------- | ------------------ |
+| Relationship | has-a               | has-a              |
+| Ownership    | ❌ No ownership      | ✅ Strong ownership |
+| Lifecycle    | Independent         | Dependent          |
+| Strength     | Weak                | Strong             |
+| Example      | Employee–Department | Car–Engine         |
+
+🔥 Key Difference. 
+👉
+Aggregation → “uses” relationship.  
+Composition → “owns” relationship.  
+
+
+👉 Aggregation is used when:   
+Objects are shared across multiple classes.  
+Lifecycle should be independent.  
+Example:   
+Logger.   
+Cache.  
+Configuration.  
+🚨 Common Mistake.  
+❌ Saying aggregation = composition.  
+✔ They are different based on ownership & lifecycle.  
+
+🎯 Final Interview Answer (Strong).  
+👉
+“Aggregation is a weak ‘has-a’ relationship where one class references another but does not control its lifecycle, allowing both objects to exist independently.”
+
+-----------------------------------------------
+
+
+## Composition
+Composition is a design principle where a class contains objects of other classes to reuse functionality, instead of inheriting from them.
+
+👉 “HAS-A relationship instead of IS-A”.  
+Inheritance → is-a (Car is a Vehicle).  
+Composition → has-a (Car has an Engine).  
+
+**Explanation**.  
+In composition:   
+A class uses another class as a field.  
+It delegates work to that class.  
+Helps build flexible and loosely coupled systems.  
+
+~~~CSharp
+public class Engine
+{
+    public void Start()
+    {
+        Console.WriteLine("Engine started");
+    }
+}
+----------------
+public class Car
+{
+    private Engine _engine; // ✅ HAS-A relationship
+
+    public Car()
+    {
+        _engine = new Engine(); // composition
+    }
+
+    public void StartCar()
+    {
+        _engine.Start(); // delegation
+        Console.WriteLine("Car started");
+    }
+}
+
+## Usage
+var car = new Car();
+car.StartCar();
+
+~~~
+Why Composition is Important.   
+✅ 1. Loose Coupling.   
+Change Engine → no impact on Car logic.   
+✅ 2. Flexibility.   
+You can replace behavior at runtime.   
+✅ 3. Reusability.    
+Same Engine can be used by:    
+Car.  
+Truck.  
+Bike.   
+✅ 4. Avoids Inheritance Problems.  
+No tight hierarchy. 
+No LSP violations.   
+
+**Real-World Example**.  
+~~~ csharp
+public interface INotification
+{
+    void Send(string message);
+}
+-------
+public class EmailNotification : INotification
+{
+    public void Send(string message)
+    {
+        Console.WriteLine("Email sent");
+    }
+}
+----------------
+public class OrderService
+{
+    private readonly INotification _notification; // ✅ Composition
+
+    public OrderService(INotification notification)
+    {
+        _notification = notification;
+    }
+
+    public void PlaceOrder()
+    {
+        _notification.Send("Order placed");
+    }
+}
+~~~
+
+You can inject:    
+Email.  
+SMS.  
+Push notification.  
+✔ No code change in OrderService.  
+✔ This is composition + DI.  
+
+**Composition vs Inheritance**
+| Aspect        | Composition | Inheritance |
+| ------------- | ----------- | ----------- |
+| Relationship  | has-a       | is-a        |
+| Flexibility   | High        | Low         |
+| Coupling      | Loose       | Tight       |
+| Reusability   | Better      | Limited     |
+| Change impact | Minimal     | High        |
+
+
+“Favor composition over inheritance”.   
+✔ This is a core design principle.  
+
+When to Use Composition.  
+Use composition when:   
+✔ Behavior can change.  
+✔ No strict “is-a” relationship.  
+✔ Need flexibility.  
+✔ Building scalable systems. 
+
+🚫 When NOT to Use.   
+❌ If strong hierarchy exists. 
+❌ If behavior is fixed and shared. 
+
+
+🎯 Final Interview Answer (Strong). 
+👉
+“Composition is a design approach where a class achieves functionality by containing instances of other classes rather than inheriting from them. It promotes loose coupling, flexibility, and is preferred over inheritance in modern architectures.”
+
+--------------------------------------
+## 1. Classes & Objects
+
+### Definition
+
+Class is a blueprint that defines properties and behaviors.\
+Object is an instance of a class.
+
+### Explanation
+
+-   Class = template\
+-   Object = real entity created from class\
+-   Memory is allocated only when object is created
+
+### Example
+
+``` csharp
+public class Car
+{
+    public string Name;
+
+    public void Drive()
+    {
+        Console.WriteLine($"{Name} is driving");
+    }
+}
+
+Car car = new Car();
+car.Name = "BMW";
+car.Drive();
+```
+
+------------------------------------------------------------------------
+
+## 2. Constructors
+
+### Definition
+
+A constructor is a special method used to initialize an object when it
+is created.
+
+### Explanation
+
+-   Same name as class\
+-   No return type\
+-   Automatically called\
+-   Ensures valid object state
+
+### Example
+
+``` csharp
+public class User
+{
+    public string Name;
+
+    public User(string name)
+    {
+        Name = name;
+    }
+}
+
+var user = new User("Subramanyam");
+```
+
+### Static Constructor
+
+``` csharp
+public class AppConfig
+{
+    public static string AppName;
+
+    static AppConfig()
+    {
+        AppName = "My App";
+    }
+}
+```
+
+------------------------------------------------------------------------
+
+## 3. Destructors / Finalizers
+
+### Definition
+
+Used to release unmanaged resources when object is destroyed.
+
+### Explanation
+
+-   Called by Garbage Collector\
+-   Not predictable\
+-   Rarely used\
+-   Prefer IDisposable
+
+### Example
+
+``` csharp
+public class FileHandler
+{
+    ~FileHandler()
+    {
+        Console.WriteLine("Cleaning resources");
+    }
+}
+```
+
+------------------------------------------------------------------------
+
+## 4. Access Modifiers
+
+### Definition
+
+Defines who can access class members.
+
+### Explanation
+
+Used for encapsulation and security.
+
+### Types
+
+-   private → only inside class\
+-   protected → class + derived\
+-   internal → same assembly\
+-   public → everywhere
+
+### Example
+
+``` csharp
+public class User
+{
+    private string password;
+    protected string Role;
+    internal int Age;
+    public string Name;
+}
+```
+
+------------------------------------------------------------------------
+
+## 5. Method Overloading
+
+### Definition
+
+Same method name with different parameters.
+
+### Explanation
+
+-   Compile-time polymorphism\
+-   Improves readability
+
+### Example
+
+``` csharp
+public class Calculator
+{
+    public int Add(int a, int b)
+    {
+        return a + b;
+    }
+
+    public double Add(double a, double b)
+    {
+        return a + b;
+    }
+}
+```
+
+------------------------------------------------------------------------
+
+## 6. Method Overriding
+
+### Definition
+
+Derived class changes base class behavior.
+
+### Explanation
+
+-   Runtime polymorphism\
+-   Requires inheritance\
+-   Uses virtual and override
+
+### Example
+
+``` csharp
+public class Animal
+{
+    public virtual void Speak()
+    {
+        Console.WriteLine("Animal sound");
+    }
+}
+
+public class Dog : Animal
+{
+    public override void Speak()
+    {
+        Console.WriteLine("Bark");
+    }
+}
+
+Animal animal = new Dog();
+animal.Speak();
+```
+
+
+
+
 
 
 ## Abstract Class?
